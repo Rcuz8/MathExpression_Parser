@@ -157,44 +157,7 @@ def testTree():
 
 
 
-def isD(_string):
-    digit_list = ['0', '1', '2',  '3', '4', '5', '6', '7', '8', '9']
-    if _string.processList(digit_list):
-        return True
-    return  False
 
-def isP(_string):
-    if  _string.process('^'):
-        if isD(_string):
-            return True
-        else:
-            return False
-    else:
-        return True
-
-def isV(_string):
-    if _string.process('x') or _string.process('y') or _string.process('z'):
-        return True
-    return False
-
-def isVP(_string):
-
-    if (_string.process('(')):
-        if isV(_string):
-            if (_string.process(')')):
-                if isP(_string):
-                    return True
-                return False
-            return False
-        return  False
-
-    if isV(_string):
-        if isP(_string):
-            return True
-        else:
-            return False
-
-    return False
 
 def eps_Node(par_letter):
     return new_Node_l(par_letter, "EPS")
@@ -290,12 +253,125 @@ def str_to_int(_str):
 #         return str_to_int(node.val())
 #     if (node.val() == 'V')
 
+
+
+
 # D -> 1|2|3|4|5...
 # V ->  x|y|z
+# VD -> V | D
 # P -> ^ D | NULL
-# VP -> (V) P | V P
-# C -> VP C
-#
+# VP -> VD P | (E) P
+# F -> +- VP | VP
+# T  -> */ F T | F E
+# E -> (T) P | T | NULL
+
+
+
+def isD(_string):
+    digit_list = ['0', '1', '2',  '3', '4', '5', '6', '7', '8', '9']
+    if _string.processList(digit_list):
+        return True
+    return  False
+
+def isV(_string):
+    if _string.process('x') or _string.process('y') or _string.process('z'):
+        return True
+    return False
+
+def isVD(_string):
+    if isV(_string) or isD(_string):
+        return True
+    return False
+
+def isP(_string):
+    if  _string.process('^'):
+        if isD(_string):
+            return True
+        else:
+            return False
+    else:
+        return True
+
+def isVP(_string):
+
+    if (_string.process('(')):
+        if isT(_string):
+            if (_string.process(')')):
+                if isP(_string):
+                    return True
+                return False
+            return False
+        return False
+
+    if isVD(_string):
+        if isP(_string):
+            return True
+        else:
+            return False
+
+    return False
+
+def isF(_string):
+        if (_string.process('+') or _string.process('-')):
+            if isVP(_string):
+                return True
+            return False
+        if isVP(_string):
+            return True
+        return False
+
+
+def isT(_string):
+    if (_string.process('*') or _string.process('/')):
+        if isF(_string):
+            if isT(_string):
+                return True
+            return False
+        return False
+    if isF(_string):
+        if isT(_string):
+            return True
+        return False;
+    return False
+
+def isE(_string):
+    if (_string.process('(')):
+        if isT(_string):
+            if (_string.process(')')):
+                if isP(_string):
+                    return True
+                return False
+            return False
+        return False
+
+    if isT(_string):
+        return True
+
+    if _string.done():
+        return True
+    return False
+
+def parse(_string):
+    res = isE(_string)
+    if (res and _string.done()):
+        return True
+    return False
+
+# D -> 1|2|3|4|5...
+# V ->  x|y|z
+# VD -> V | D
+# P -> ^ D | NULL
+# VP -> VD P | (E) P
+# F -> +- VP | VP
+# T  -> */ F T | F E
+# E -> (T) P | T | NULL
+
+
+# F -> +- VP | VP | NULL
+# T  -> */ F | F E
+# E -> (T F) P | T F | NULL
+
+# Parsing function below works for exponents
 
 def parseTree_for(openinga_parse_function, _string):
     t = openinga_parse_function(_string)
@@ -304,6 +380,29 @@ def parseTree_for(openinga_parse_function, _string):
             return Tree(t)
         return None
     return None
+
+def null(obj):
+    return obj is None
+
+def exists(obj):
+    return not(obj is None)
+
+def parse_timeee_babbyyyyyy(node):
+    if (null(node) or node.val == 'EPS'):
+        return 1
+    if (node.val == 'D'):
+        return int(node.firstChild().val)#int(parse_timeee_babbyyyyyy(node.firstChild()))
+    if (node.val == 'V'):
+        return 10;
+    if (node.val == 'P'):
+        return int(parse_timeee_babbyyyyyy(node.lastChild()))
+    if (node.val == "VP"):
+        if (node.firstChild == '('):
+            return pow(parse_timeee_babbyyyyyy(node.children[1]),parse_timeee_babbyyyyyy(node.children[3]))
+        return pow(parse_timeee_babbyyyyyy(node.children[0]), parse_timeee_babbyyyyyy(node.children[1]))
+    if node.val.isDigit():
+        return int(node.val)
+    return 0
 
 def start():
 
@@ -315,15 +414,31 @@ def start():
 
             str = Str(i)
 
-            tree = parseTree_for(node_VP, str)
+            # tree = parseTree_for(node_VP, str)
+            #
+            # print("Parsing tree: \n")
+            #
+            # root = tree.root
 
-            print("Parsing tree: \n")
 
-            tree.preorder_transversal()
+            try:
 
-            # print("String is in the Context-Free Grammar: ", parse(isVP, str))
+                # tree.preorder_transversal()
+                #
+                # res = parse_timeee_babbyyyyyy(root)
+                # print("Parsed output (vars=10) : ", res)
 
-            i = input("\nEnter input: ")
+                print("String is in the Context-Free Grammar: ", parse(str))
+
+                i = input("\nEnter input: ")
+
+            except AttributeError as a:
+
+                print("Sorry!  ", a)
+
+                i = input("\nEnter input: ")
+
+
 
 
     except KeyboardInterrupt:
